@@ -1,0 +1,39 @@
+download dos arquivos link:
+
+grouplens.org/datasets/movielens/25m/
+
+
+val df_genome1 = spark.read.format("csv").option("header","true").option("delimiter", ",").load("genome-scores.csv")
+
+val df_genome2 = spark.read.format("csv").option("header","true").option("delimiter", ",").load("genome-tags.csv")
+
+val df_links = spark.read.format("csv").option("header","true").option("delimiter", ",").load("links.csv")
+
+val df_movies = spark.read.format("csv").option("header","true").option("delimiter", ",").load("movies.csv")
+
+val df_ratings = spark.read.format("csv").option("header","true").option("delimiter", ",").load("ratings.csv")
+
+val df_tags = spark.read.format("csv").option("header","true").option("delimiter", ",").load("tags.csv")
+
+val junto =  df_genome1.join(df_genome2,"tagId")
+
+junto.cache()
+
+val junto2 = junto.join(df_movies,"movieId")
+
+junto2.cache()
+
+val junto3 = junto2.join(df_links,"movieId")
+
+junto3.cache()
+
+val junto4 = junto3.join(df_ratings,"movieId")
+
+junto4.cache()
+
+val final = junto4.join(df_tags,Seq("userId","movieId","tag","timestamp"),"inner")
+
+final.cache()
+
+final.coalesce(1).write.option("compression", "gzip").option("header","true").format("csv").save("spark-output-filme-final")
+
